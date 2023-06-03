@@ -4,60 +4,19 @@ from tkinter import ttk
 from tkinter import messagebox
 import pandas as pd
 import os
+from database import connect_to_db, create_tables
+import time
 
-conn = sqlite3.connect("courses.db")
+start_time = time.time()
+conn = connect_to_db()
 cursor = conn.cursor()
-
-cursor.executescript("""
-CREATE TABLE IF NOT EXISTS Courses (
-    ID INTEGER PRIMARY KEY AUTOINCREMENT,
-    Name TEXT NOT NULL,
-    Price REAL NOT NULL,
-    Description TEXT,
-    IsReady BOOLEAN NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS Instructors (
-    ID INTEGER PRIMARY KEY AUTOINCREMENT,
-    FirstName TEXT NOT NULL,
-    LastName TEXT NOT NULL,
-    MiddleName TEXT,
-    CourseID INTEGER,
-    FOREIGN KEY (CourseID) REFERENCES Courses (ID)
-);
-
-CREATE TABLE IF NOT EXISTS Cashiers (
-    ID INTEGER PRIMARY KEY AUTOINCREMENT,
-    FirstName TEXT NOT NULL,
-    LastName TEXT NOT NULL,
-    MiddleName TEXT,
-    MachineID INTEGER NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS Clients (
-    ID INTEGER PRIMARY KEY AUTOINCREMENT,
-    FirstName TEXT NOT NULL,
-    LastName TEXT NOT NULL,
-    PhoneNumber TEXT NOT NULL,
-    Email TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS Sales (
-    ID INTEGER PRIMARY KEY AUTOINCREMENT,
-    CourseID INTEGER,
-    CashierID INTEGER,
-    ClientID INTEGER,
-    FOREIGN KEY (CourseID) REFERENCES Courses (ID),
-    FOREIGN KEY (CashierID) REFERENCES Cashiers (ID),
-    FOREIGN KEY (ClientID) REFERENCES Clients (ID)
-);
-""")
+create_tables(cursor)
 
 class Application(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.title("Курсы")
+        self.title("ТППО")
         self.geometry("800x600")
         self.resizable(False, False)
 
@@ -99,7 +58,6 @@ class Application(tk.Tk):
         # Сохранение Excel-файла
         writer.close()
         messagebox.showinfo("Успешно", f"База данных экспортирована в файл 'database_export.xlsx'")
-
 
 class ClientTab(ttk.Frame):
     def __init__(self, parent, *args, **kwargs):
@@ -524,5 +482,8 @@ class InstructorTab(ttk.Frame):
 
 if __name__ == "__main__":
     app = Application()
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"Загрузка оконного приложения заняла: {elapsed_time:.2f} секунд")
     app.mainloop()
 
